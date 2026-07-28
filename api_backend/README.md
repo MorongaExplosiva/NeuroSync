@@ -1,4 +1,4 @@
-# api_backend — Capa Lógica (Cibernética)
+# api_backend — Capa Lógica 
 
 Procesamiento de datos, base de datos y algoritmos de detección de anomalías.
 

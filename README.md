@@ -66,7 +66,7 @@ Cada carpeta tiene su propio `README.md` con el detalle de lo que va dentro.
 | Nombre | Rol / Disciplina |
 |---|---|
 | Diego Talavera, Luciani Jarquin  | Mecatrónica / Electromédica — hardware |
-| Fernando Arauz                   | Cibernética — Backend / lógica |
+|Ramon Mendoza                     | Cibernética — Backend / lógica |
 | Erika Duarte y Fernando Arauz    |UX/UI — frontend |
 | Fernando Arauz                   | Líder de equipo |
 

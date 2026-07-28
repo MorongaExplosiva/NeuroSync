@@ -14,7 +14,7 @@
 | Temática | Salud |
 | Reto | Mente sana |
 | Equipo | *CultivaData* |
-| Entrega | Primer Sprint de Evaluación — 31 de julio, 2026 |
+
 
 💡 El problema
 

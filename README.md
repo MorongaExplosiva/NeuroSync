@@ -1,4 +1,4 @@
-# 🧠 NeuroSync
+🧠 NeuroSync
 
 **Hackathon Nicaragua 2026 · Categoría Aficionado · Temática: Salud**
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 📌 Datos del reto
+ 📌 Datos del reto
 
 | Campo | Detalle |
 |---|---|
@@ -16,11 +16,11 @@
 | Equipo | *(nombre del equipo)* |
 | Entrega | Primer Sprint de Evaluación — 31 de julio, 2026 |
 
-## 💡 El problema
+💡 El problema
 
 La salud mental sigue siendo un tema poco abordado de forma preventiva, especialmente en entornos educativos. El estigma y la desinformación impiden que jóvenes y adultos identifiquen señales tempranas de ansiedad o depresión, y los métodos actuales dependen del auto-reporte del usuario, que suele ser tardío e impreciso.
 
-## 🛠 Nuestra solución
+ 🛠 Nuestra solución
 
 **NeuroSync** integra hardware (wearables o biosensores) para monitorear indicadores fisiológicos —frecuencia cardíaca y respuesta galvánica de la piel— en lugar de depender de cuestionarios. Un algoritmo analiza esos datos y:
 
@@ -28,7 +28,7 @@ La salud mental sigue siendo un tema poco abordado de forma preventiva, especial
 - Envía micro-intervenciones al usuario (ej. ejercicios de respiración) en el momento oportuno.
 - Reduce el estigma al hacer el monitoreo pasivo y objetivo, no un formulario que llenar.
 
-## 🏗 Arquitectura
+ 🏗 Arquitectura
 
 El proyecto se organiza en tres capas, alineadas a los perfiles de ingeniería del equipo:
 
@@ -49,7 +49,7 @@ flowchart LR
 2. **Capa Lógica** — recepción, almacenamiento y análisis de los datos; algoritmo de detección de anomalías.
 3. **Capa de Usuario** — interfaz para estudiantes (móvil) y dashboard analítico para orientadores (web).
 
-## 📂 Estructura del repositorio
+ 📂 Estructura del repositorio
 
 ```
 NeuroSync/
@@ -61,8 +61,7 @@ NeuroSync/
 ```
 
 Cada carpeta tiene su propio `README.md` con el detalle de lo que va dentro.
-
-## 👥 Equipo
+ 👥 Equipo
 
 | Nombre | Rol / Disciplina |
 |---|---|
@@ -71,13 +70,13 @@ Cada carpeta tiene su propio `README.md` con el detalle de lo que va dentro.
 | *(nombre)* | UX/UI — frontend |
 | *(nombre)* | Líder de equipo |
 
-## ✅ Estado del Sprint 1 (31 de julio, 2026)
+ ✅ Estado del Sprint 1 (31 de julio, 2026)
 
 - [ ] Video pitch de 1 minuto grabado y subido a YouTube
 - [ ] Product Backlog / tablero Kanban actualizado
 - [ ] Repositorio de GitHub inicializado con colaboradores agregados
 
-## 🎯 Impacto esperado
+🎯 Impacto esperado
 
 Promover el bienestar emocional mediante una herramienta accesible y dinámica que facilite la identificación temprana de riesgos, reduzca el estigma y fortalezca el autocuidado, mejorando el acceso a orientación y apoyo oportuno.
 

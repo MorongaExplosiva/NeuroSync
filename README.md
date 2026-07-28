@@ -81,4 +81,4 @@ Cada carpeta tiene su propio `README.md` con el detalle de lo que va dentro.
 Promover el bienestar emocional mediante una herramienta accesible y dinámica que facilite la identificación temprana de riesgos, reduzca el estigma y fortalezca el autocuidado, mejorando el acceso a orientación y apoyo oportuno.
 
 ---
-*Desarrollado para el Primer Sprint de Hackathon Nicaragua — 31 de julio, 2026.*
+

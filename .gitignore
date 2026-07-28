@@ -1,0 +1,28 @@
+# --- Python (api_backend / simulador_hardware) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+
+# --- Node / Frontend (app_web) ---
+node_modules/
+dist/
+build/
+.next/
+.env.local
+npm-debug.log*
+
+# --- Datos y logs ---
+*.log
+logs/
+*.sqlite3
+*.db
+
+# --- Editor / SO ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroSync · Dashboard Orientador</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🧠 NeuroSync <span class="subt">Dashboard del Orientador</span></h1>
+    <a class="link-suave" href="estudiante.html">Ver vista de estudiante →</a>
+  </header>
+
+  <main>
+    <section class="tarjeta" id="alertas-section">
+      <h2>🚨 Alertas activas</h2>
+      <div id="alertas-lista"><p class="muted">Sin alertas por ahora.</p></div>
+    </section>
+
+    <section class="tarjeta" id="usuarios-section">
+      <h2>👥 Estado de estudiantes</h2>
+      <table id="tabla-usuarios">
+        <thead>
+          <tr><th>Estudiante</th><th>FC</th><th>GSR</th><th>Última lectura</th><th>Estado</th></tr>
+        </thead>
+        <tbody><tr><td colspan="5" class="muted">Esperando datos del backend...</td></tr></tbody>
+      </table>
+    </section>
+
+    <section class="tarjeta" id="grafico-section">
+      <h2>📈 Historial de Frecuencia Cardíaca</h2>
+      <select id="selector-usuario"></select>
+      <canvas id="grafico" height="110"></canvas>
+    </section>
+  </main>
+
+  <footer>NeuroSync · Hackathon Nicaragua 2026</footer>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroSync · Mi estado</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="estudiante">
+  <header>
+    <h1>🧠 NeuroSync</h1>
+    <a class="link-suave" href="index.html">← Ver dashboard orientador</a>
+  </header>
+
+  <main class="centrado">
+    <label class="selector-label">Soy:
+      <select id="usuario-select"></select>
+    </label>
+
+    <div id="estado-card" class="estado-card normal">
+      <p class="estado-texto">Cargando...</p>
+      <p class="estado-detalle muted"></p>
+    </div>
+
+    <div id="intervencion" class="oculto">
+      <button onclick="sonidoActivado = !sonidoActivado; this.textContent = sonidoActivado ? '🔊 Sonido activado' : '🔇 Sonido silenciado';" style="background:none; border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; margin-bottom:10px;">🔊 Sonido activado</button>
+      <h2>Tómate un momento 🌿</h2>
+      <div class="respiracion">
+        <div class="circulo"></div>
+      </div>
+      <p id="instruccion">Inhala...</p>
+    </div>
+  </main>
+
+  <footer>NeuroSync · Hackathon Nicaragua 2026</footer>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -139,6 +139,8 @@ if (document.getElementById("estado-card")) {
   const estadoDetalle = estadoCard.querySelector(".estado-detalle");
   const intervencion = document.getElementById("intervencion");
   const instruccion = document.getElementById("instruccion");
+  const orientadorCard = document.getElementById("orientador-card");
+  const orientadorNota = document.getElementById("orientador-nota");
 
   let opcionesListas = false;
   let cicloRespiracion = null;
@@ -164,11 +166,15 @@ if (document.getElementById("estado-card")) {
       if (!yo) return;
 
       if (yo.en_alerta) {
+        orientadorCard.classList.add("destacada");
+        orientadorNota.classList.remove("oculto");
         estadoCard.className = "estado-card alerta";
         estadoTexto.textContent = "Hemos notado señales de estrés";
         estadoDetalle.textContent = `FC: ${yo.ultima_fc} bpm · GSR: ${yo.ultima_gsr}`;
         mostrarIntervencion();
       } else {
+        orientadorCard.classList.remove("destacada");
+        orientadorNota.classList.add("oculto");
         estadoCard.className = "estado-card normal";
         estadoTexto.textContent = "Todo tranquilo por ahora";
         estadoDetalle.textContent = yo.ultima_fc ? `FC: ${yo.ultima_fc} bpm · GSR: ${yo.ultima_gsr}` : "";

@@ -1,13 +1,15 @@
 :root {
-  --azul-oscuro: #12203c;
-  --azul: #2e75b6;
-  --teal: #2fbf9f;
-  --gris-claro: #f4f6fa;
-  --texto: #1f2a3c;
-  --rojo: #d64545;
-  --amarillo: #e0a80e;
-  --verde: #2fa85a;
-  --borde: #e1e6ef;
+  --azul-marca: #5ABCF9;   /* NeuroSync azul - identidad de marca */
+  --azul-oscuro: #1E293B;  /* Azul oscuro - títulos y texto principal */
+  --azul: #2563EB;         /* Azul - acción, botones, navegación */
+  --teal: #2fbf9f;         /* se mantiene para la animación de respiración */
+  --gris-claro: #F8FAFC;   /* Blanco - fondo principal */
+  --texto: #1E293B;        /* Azul oscuro - texto principal */
+  --rojo: #EF4444;         /* Alertas prioritarias */
+  --naranja: #F97316;      /* Riesgo elevado */
+  --amarillo: #FACC15;     /* Estado de observación */
+  --verde: #22C55E;        /* Estado estable */
+  --borde: #DBEAFE;        /* Azul claro - bordes y fondos suaves */
 }
 
 * { box-sizing: border-box; }
@@ -140,3 +142,42 @@ body.estudiante main.centrado {
   50%  { transform: scale(1.6); }
   100% { transform: scale(1);   }
 }
+
+.orientador-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.orientador-card.destacada {
+  background: #eef5ff;
+  border-color: var(--azul);
+}
+.orientador-info { display: flex; align-items: center; gap: 10px; }
+.orientador-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #e3f5e9; display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.orientador-nombre { margin: 0; font-weight: 600; font-size: 0.92rem; }
+.orientador-rol { margin: 0; font-size: 0.78rem; }
+.btn-contactar {
+  background: var(--azul); color: #fff; text-decoration: none;
+  padding: 8px 14px; border-radius: 6px; font-size: 0.82rem; font-weight: 600;
+  white-space: nowrap;
+}
+.btn-contactar:hover { background: var(--azul-oscuro); }
+.orientador-nota {
+  width: 100%;
+  font-size: 0.8rem;
+  color: var(--azul-oscuro);
+  margin: 8px 0 0;
+}
+.orientador-nota.oculto { display: none; }

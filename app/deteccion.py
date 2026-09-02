@@ -2,39 +2,65 @@ from statistics import mean
 from sqlalchemy.orm import Session
 from app import models
 
-# Umbrales de respaldo, solo mientras el usuario no tiene historial suficiente
-UMBRAL_FC_RESPALDO = 100
-UMBRAL_GSR_RESPALDO = 3.5
+# ---------- 1. Umbrales numéricos normales y críticos ----------
+UMBRALES = {
+    "frecuencia_cardiaca": {
+        "normal_max": 100,   # arriba de esto ya es señal de alerta
+        "critico": 120,      # arriba de esto es urgente, sin esperar patrón sostenido
+    },
+    "gsr": {
+        "normal_max": 3.5,
+        "critico": 5.0,
+    },
+}
 
-LECTURAS_CONSECUTIVAS = 3      # cuántas lecturas seguidas evaluamos para la alerta
-MINIMO_PARA_LINEA_BASE = 10    # cuántas lecturas necesita un usuario antes de tener línea base
-MARGEN_FC = 1.20               # 20% arriba de su promedio personal
-MARGEN_GSR = 1.30              # 30% arriba de su promedio personal
+LECTURAS_CONSECUTIVAS = 3
+MINIMO_PARA_LINEA_BASE = 10
+MARGEN_FC = 1.20   # 20% arriba del promedio personal
+MARGEN_GSR = 1.30  # 30% arriba del promedio personal
 
 
 def calcular_linea_base(db: Session, usuario_id: str):
-    """Devuelve (promedio_fc, promedio_gsr) del historial de este usuario,
-    o None si todavía no tiene suficientes lecturas."""
     historial = (
         db.query(models.Medicion)
         .filter(models.Medicion.usuario_id == usuario_id)
         .order_by(models.Medicion.id.asc())
         .all()
     )
-
-    # Excluimos las últimas LECTURAS_CONSECUTIVAS: son las que vamos a evaluar,
-    # no queremos que un episodio de estrés actual "contamine" su propio promedio
     base = historial[:-LECTURAS_CONSECUTIVAS] if len(historial) > LECTURAS_CONSECUTIVAS else []
-
     if len(base) < MINIMO_PARA_LINEA_BASE:
         return None
-
-    promedio_fc = mean(m.frecuencia_cardiaca for m in base)
-    promedio_gsr = mean(m.gsr for m in base)
-    return promedio_fc, promedio_gsr
+    return mean(m.frecuencia_cardiaca for m in base), mean(m.gsr for m in base)
 
 
-def evaluar_anomalia(db: Session, usuario_id: str) -> bool:
+# ---------- 2. Reglas modulares (el "motor de inferencia") ----------
+def regla_fc_fuera_de_rango(medicion, referencia_fc):
+    return medicion.frecuencia_cardiaca > referencia_fc
+
+
+def regla_gsr_fuera_de_rango(medicion, referencia_gsr):
+    return medicion.gsr > referencia_gsr
+
+
+def regla_fc_critica(medicion):
+    return medicion.frecuencia_cardiaca > UMBRALES["frecuencia_cardiaca"]["critico"]
+
+
+def regla_gsr_critica(medicion):
+    return medicion.gsr > UMBRALES["gsr"]["critico"]
+
+
+def motor_inferencia(medicion, referencia_fc, referencia_gsr) -> str:
+    """Evalúa las reglas de estado para UNA medición."""
+    if regla_fc_critica(medicion) or regla_gsr_critica(medicion):
+        return "critico"
+    if regla_fc_fuera_de_rango(medicion, referencia_fc) and regla_gsr_fuera_de_rango(medicion, referencia_gsr):
+        return "elevado"
+    return "normal"
+
+
+# ---------- 3. Evaluación modular: cambia el estado a "anomalia" ----------
+def evaluar_estado(db: Session, usuario_id: str) -> str:
     ultimas = (
         db.query(models.Medicion)
         .filter(models.Medicion.usuario_id == usuario_id)
@@ -42,27 +68,35 @@ def evaluar_anomalia(db: Session, usuario_id: str) -> bool:
         .limit(LECTURAS_CONSECUTIVAS)
         .all()
     )
-
-    if len(ultimas) < LECTURAS_CONSECUTIVAS:
-        return False
+    if not ultimas:
+        return "normal"
 
     base = calcular_linea_base(db, usuario_id)
-
     if base is None:
-        # Todavía no hay línea base: usamos el umbral fijo como respaldo
-        fuera_de_rango = all(
-            m.frecuencia_cardiaca > UMBRAL_FC_RESPALDO and m.gsr > UMBRAL_GSR_RESPALDO
-            for m in ultimas
-        )
+        referencia_fc = UMBRALES["frecuencia_cardiaca"]["normal_max"]
+        referencia_gsr = UMBRALES["gsr"]["normal_max"]
     else:
         promedio_fc, promedio_gsr = base
-        fuera_de_rango = all(
-            m.frecuencia_cardiaca > promedio_fc * MARGEN_FC
-            and m.gsr > promedio_gsr * MARGEN_GSR
-            for m in ultimas
-        )
+        referencia_fc = promedio_fc * MARGEN_FC
+        referencia_gsr = promedio_gsr * MARGEN_GSR
 
-    if not fuera_de_rango:
+    # Condición crítica: la lectura MÁS RECIENTE ya es urgente, no espera patrón sostenido
+    if motor_inferencia(ultimas[0], referencia_fc, referencia_gsr) == "critico":
+        return "anomalia"
+
+    # Patrón sostenido: las últimas N lecturas seguidas "elevadas"
+    if len(ultimas) < LECTURAS_CONSECUTIVAS:
+        return "normal"
+    estados = [motor_inferencia(m, referencia_fc, referencia_gsr) for m in ultimas]
+    if all(e == "elevado" for e in estados):
+        return "anomalia"
+
+    return "normal"
+
+
+def evaluar_anomalia(db: Session, usuario_id: str) -> bool:
+    """Punto de entrada que ya usa main.py: True si el estado cambió a 'anomalia'."""
+    if evaluar_estado(db, usuario_id) != "anomalia":
         return False
 
     alerta_activa = (

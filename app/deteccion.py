@@ -107,9 +107,19 @@ def evaluar_anomalia(db: Session, usuario_id: str) -> bool:
     if alerta_activa:
         return True
 
+    # Determinar severidad según la lectura más reciente
+    ultima = (
+        db.query(models.Medicion)
+        .filter(models.Medicion.usuario_id == usuario_id)
+        .order_by(models.Medicion.id.desc())
+        .first()
+    )
+    es_critica = regla_fc_critica(ultima) or regla_gsr_critica(ultima)
+    gravedad = "CRÍTICA" if es_critica else "ELEVADA"
+
     nueva_alerta = models.Alerta(
         usuario_id=usuario_id,
-        mensaje="Posible estrés prolongado: variación significativa respecto a su patrón habitual",
+        mensaje=f"[{gravedad}] Posible estrés prolongado: variación significativa respecto a su patrón habitual",
     )
     db.add(nueva_alerta)
     db.commit()

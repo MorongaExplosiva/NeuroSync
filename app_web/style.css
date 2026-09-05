@@ -1,22 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-:root {
-  --primary: #4F46E5;
-  --primary-hover: #4338CA;
-  --calm: #10B981;
-  --calm-dark: #059669;
-  --alert-red: #EF4444;
-  --alert-dark: #DC2626;
-  --bg-slate: #F8FAFC;
-  --surface: #FFFFFF;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --border-subtle: #E2E8F0;
-  --radius-card: 16px;
-  --radius-sm: 8px;
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -25,160 +8,271 @@
 }
 
 body {
-  background-color: var(--bg-slate);
-  color: var(--text-main);
+  background: #f1f5f9;
+  color: #0f172a;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Encabezado */
-header, .navbar {
-  background: linear-gradient(135deg, #312E81 0%, #4F46E5 100%);
-  color: white;
-  padding: 1rem 2.5rem;
+/* Topbar idéntica al wireframe */
+.topbar {
+  height: 64px;
+  background: #0f172a;
+  color: #ffffff;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  padding: 0 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 }
 
-header h1, .brand-title {
-  font-size: 1.35rem;
-  font-weight: 700;
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.user-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-header a, .nav-link {
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: none;
+  gap: 1.5rem;
   font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.nav-link {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  text-decoration: none;
   font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  transition: background 0.2s;
 }
 
-header a:hover, .nav-link:hover {
-  background: rgba(255, 255, 255, 0.22);
-  transform: translateY(-1px);
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Contenedor principal */
-main, .container {
-  width: 100%;
-  max-width: 980px;
-  margin: 2rem auto;
-  padding: 0 1.5rem;
+/* Layout con barra lateral */
+.layout {
+  display: flex;
   flex: 1;
 }
 
-/* Tarjetas y Contenedores */
-.card, section, div[id*="contenedor"], #card-estudiante {
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-card);
-  padding: 1.75rem;
-  margin-bottom: 1.75rem;
-  box-shadow: var(--shadow-card);
+.sidebar {
+  width: 250px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-/* Selector de Estudiante */
-select, #selector-usuario, #select-usuario {
-  padding: 0.6rem 1.25rem;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border-subtle);
-  background-color: white;
-  font-size: 0.95rem;
+.sidebar-item {
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.88rem;
   font-weight: 600;
-  color: var(--text-main);
-  outline: none;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
 }
 
-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+.sidebar-item:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
-/* ==========================================================
-   ANIMACIÓN DE CRISIS / ALERTA AGUDA (VISTA ESTUDIANTE Y DASHBOARD)
-   ========================================================== */
-#alerta, .alerta-activa, .alerta-crisis, div[id*="alerta"]:not(:empty) {
-  background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%) !important;
-  border: 2px solid var(--alert-red) !important;
-  border-radius: 14px !important;
-  padding: 1.5rem !important;
-  margin: 1.5rem auto !important;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  animation: pulso-crisis 1.6s infinite alternate ease-in-out, sacudida-leve 4s infinite ease-in-out;
+.sidebar-item.active {
+  background: #1e3a8a;
+  color: #ffffff;
 }
 
-/* Efecto de resplandor expansivo de emergencia */
-@keyframes pulso-crisis {
-  0% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4), 0 4px 12px rgba(239, 68, 68, 0.15);
-    border-color: #EF4444;
-  }
-  100% {
-    box-shadow: 0 0 24px 8px rgba(239, 68, 68, 0.25), 0 8px 24px rgba(239, 68, 68, 0.25);
-    border-color: #B91C1C;
-  }
+/* Área de contenido */
+.content {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: calc(100vw - 250px);
 }
 
-@keyframes sacudida-leve {
-  0%, 92%, 100% { transform: translateY(0); }
-  94% { transform: translateY(-2px); }
-  96% { transform: translateY(2px); }
-  98% { transform: translateY(-1px); }
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-#alerta h2, #alerta h3, .alerta-activa h3 {
-  color: #991B1B !important;
-  font-weight: 800 !important;
-  font-size: 1.25rem !important;
-  letter-spacing: -0.01em;
-  margin-bottom: 0.35rem;
+.content-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
 }
 
-#alerta p, .alerta-activa p {
-  color: #B91C1C !important;
+.status-indicator {
+  font-size: 0.82rem;
   font-weight: 600;
+  color: #10b981;
+  background: #d1fae5;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
 }
 
-/* ==========================================================
-   CÍRCULO DE RESPIRACIÓN GUIADA (ANIMADO TIPO GIF/ORBE)
-   ========================================================== */
-#circulo, .circulo, #circle, .circle, .circulo-respiracion {
-  display: block !important;
-  width: 170px !important;
-  height: 170px !important;
-  border-radius: 50% !important;
-  margin: 2rem auto !important;
-  background: radial-gradient(circle at 35% 35%, #34D399, #059669 85%) !important;
-  box-shadow: 0 0 35px rgba(16, 185, 129, 0.45), inset 0 0 20px rgba(255, 255, 255, 0.5) !important;
-  /* Transición fluida cuando JavaScript altera la escala */
-  transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 4s ease !important;
+/* Fila de tarjetas KPI del wireframe */
+.card-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.4rem;
+}
+
+.card-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Cajas principales */
+.box-large {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.box-large h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+/* Tabla de telemetría */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border: 1px solid #e2e8f0;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Badges de alerta y estado */
+.badge-alerta {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: inline-block;
+}
+
+.badge-normal {
+  background: #d1fae5;
+  color: #059669;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: inline-block;
+}
+
+/* Alertas activas dinámicas */
+.item-alerta {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-left: 4px solid #ef4444;
+  padding: 1rem 1.25rem;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.btn-atender {
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-atender:hover {
+  background: #1e40af;
+}
+
+select {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  font-size: 0.88rem;
+}
+
+/* Orbe de respiración tridimensional */
+#circulo {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  margin: 1.5rem auto;
+  background: radial-gradient(circle at 35% 35%, #34d399, #059669 85%);
+  box-shadow: 0 0 35px rgba(16, 185, 129, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.5);
+  transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
-/* Onda expansiva continua que simula respiración orgánica */
-#circulo::after, .circulo::after {
+#circulo::after {
   content: "";
   position: absolute;
-  top: -12px;
-  left: -12px;
-  right: -12px;
-  bottom: -12px;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
   border-radius: 50%;
-  border: 2px solid rgba(16, 185, 129, 0.4);
+  border: 2px solid rgba(16, 185, 129, 0.35);
   animation: onda-respiratoria 3s infinite ease-out;
 }
 
@@ -187,101 +281,18 @@ select:focus {
   100% { transform: scale(1.3); opacity: 0; }
 }
 
-/* ==========================================================
-   TARJETA DEL ORIENTADOR Y BOTÓN DE CONTACTO
-   ========================================================== */
-#orientador, .orientador, div[id*="orientador"] {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: white;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-card);
-  padding: 1.25rem 1.75rem;
-  margin-top: 2rem;
-  box-shadow: var(--shadow-card);
-}
-
-button, .btn, a#btn-contacto, a[id*="contacto"], .btn-contacto {
-  background: var(--primary) !important;
-  color: white !important;
-  text-decoration: none !important;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.65rem 1.4rem;
-  font-size: 0.9rem;
+.btn-action {
+  background: #1e3a8a;
+  color: #ffffff;
+  padding: 0.65rem 1.3rem;
+  border-radius: 8px;
   font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+  font-size: 0.88rem;
+  display: inline-block;
   transition: all 0.2s ease;
 }
 
-button:hover, a#btn-contacto:hover, .btn-contacto:hover {
-  background: var(--primary-hover) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
-}
-
-/* Tablas del orientador */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  text-align: left;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  padding: 0.8rem 1rem;
-  border-bottom: 2px solid var(--border-subtle);
-}
-
-td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.badge-alerta, span:contains("alerta") {
-  background: #FEE2E2;
-  color: var(--alert-red);
-  padding: 0.3rem 0.75rem;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 0.8rem;
-  animation: pulso-crisis 1.8s infinite alternate;
-}
-
-.badge-normal {
-  background: #D1FAE5;
-  color: var(--calm-dark);
-  padding: 0.3rem 0.75rem;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 0.8rem;
-}
-
-footer {
-  text-align: center;
-  padding: 1.5rem;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border-subtle);
-  background: white;
-}
-.logo-img {
-  height: 38px;
-  width: auto;
-  object-fit: contain;
-  vertical-align: middle;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-}
-
-header h1, .brand-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.btn-action:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
 }

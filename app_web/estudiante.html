@@ -1,48 +1,287 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NeuroSync · Mi estado</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroSync | Portal del Estudiante</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="estudiante">
-  <header>
-  <h1><img src="logo.png" alt="NeuroSync" class="logo-img"></h1>
-  <a href="index.html" class="nav-link">← Ver dashboard orientador</a>
-</header>
+<body>
 
-  <main class="centrado">
-    <label class="selector-label">Soy:
-      <select id="usuario-select"></select>
-    </label>
-
-    <div id="estado-card" class="estado-card normal">
-      <p class="estado-texto">Cargando...</p>
-      <p class="estado-detalle muted"></p>
+  <!-- Barra Superior -->
+  <header class="topbar">
+    <div class="brand-container" style="display: flex; align-items: center; gap: 12px;">
+      <img src="logo.png" alt="NeuroSync" class="logo-img">
+      <span style="font-size: 0.95rem; color: #94a3b8; font-weight: 600;">| Portal Estudiante</span>
     </div>
-
-    <div id="intervencion" class="oculto">
-      <button onclick="sonidoActivado = !sonidoActivado; this.textContent = sonidoActivado ? '🔊 Sonido activado' : '🔇 Sonido silenciado';" style="background:none; border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; margin-bottom:10px;">🔊 Sonido activado</button>
-      <h2>Tómate un momento 🌿</h2>
-      <div class="respiracion">
-        <div class="circulo"></div>
+    <div class="user-info">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label for="selector-usuario" style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;">Perfil:</label>
+        <select id="selector-usuario">
+          <option value="">Cargando estudiantes...</option>
+        </select>
       </div>
-      <p id="instruccion">Inhala...</p>
+      <a href="index.html" class="nav-link">← Ver dashboard orientador</a>
     </div>
-  </main>
-  <section id="orientador-card" class="orientador-card">
-  <div class="orientador-info">
-    <div class="orientador-avatar">👩‍⚕️</div>
-    <div>
-      <p class="orientador-nombre">Dra. Zandra Blanco</p>
-      <p class="orientador-rol muted">Tu orientadora</p>
-    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Menú Lateral Completo (Wireframe Estudiante) -->
+    <aside class="sidebar">
+      <div class="sidebar-item active" onclick="mostrarPestana('bienestar', this)">🌿 Mi Bienestar Activo</div>
+      <div class="sidebar-item" onclick="mostrarPestana('registros', this)">📊 Mis Registros Basales</div>
+      <div class="sidebar-item" onclick="mostrarPestana('agenda', this)">📅 Agenda y Citas</div>
+      <div class="sidebar-item" onclick="mostrarPestana('recursos', this)">📚 Recursos de Apoyo</div>
+      <div class="sidebar-item" onclick="mostrarPestana('perfil', this)">⚙️ Configuración</div>
+    </aside>
+
+    <!-- Contenido Dinámico -->
+    <main class="content">
+
+      <!-- ================= PESTAÑA 1: BIENESTAR ACTIVO (BIOMÉTRICA) ================= -->
+      <div id="tab-bienestar" class="pestana-contenido">
+        <div class="content-header" style="margin-bottom: 1.5rem;">
+          <h2>Monitoreo Fisiológico y Autorregulación</h2>
+          <span class="status-indicator">● Biosensores Conectados</span>
+        </div>
+
+        <section class="card-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.5rem;">
+          <div class="card">
+            <div class="card-title">Frecuencia Cardíaca Actual</div>
+            <div class="card-val" id="fc-valor">-- <span style="font-size: 1rem; font-weight: 600; color: #64748b;">bpm</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Conductancia de la Piel (GSR)</div>
+            <div class="card-val" id="gsr-valor">-- <span style="font-size: 1rem; font-weight: 600; color: #64748b;">µS</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Estado Biofisiológico</div>
+            <div class="card-val" id="estado-valor" style="font-size: 1.25rem;">Tranquilo</div>
+          </div>
+        </section>
+
+        <!-- Contenedor dinámico de alertas tempranas -->
+        <div id="alerta" style="display: none;"></div>
+
+        <!-- Orbe animado de biofeedback -->
+        <section class="box-large" style="text-align: center; padding: 2.5rem 1.5rem; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 1.4rem; margin-bottom: 0.5rem;">Tómate un momento 🌿</h3>
+          <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem;">
+            Sincroniza tu respiración con el orbe para regular tu sistema nervioso simpático
+          </p>
+
+          <div id="circulo"></div>
+
+          <h4 id="instruccion-respiracion" style="font-size: 1.3rem; font-weight: 700; color: #0d9488; margin-top: 1rem;">Inhala...</h4>
+          <span id="indicador-sonido" style="display: inline-block; margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">
+            🔊 Guía por voz activa
+          </span>
+        </section>
+
+        <section class="box-large" id="card-orientador" style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="font-size: 2.2rem; background: #f1f5f9; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              👩‍⚕️
+            </div>
+            <div>
+              <h4 style="font-size: 1rem; color: #0f172a;">Dra. Zandra Blanco</h4>
+              <p style="font-size: 0.85rem; color: #64748b;">Tu orientadora asignada · Centro de Acompañamiento Académico</p>
+            </div>
+          </div>
+          <button class="btn-action" onclick="mostrarPestana('agenda', document.querySelectorAll('.sidebar-item')[2])">
+            Agendar Consulta
+          </button>
+        </section>
+      </div>
+
+      <!-- ================= PESTAÑA 2: REGISTROS BASALES ================= -->
+      <div id="tab-registros" class="pestana-contenido" style="display: none;">
+        <div class="content-header" style="margin-bottom: 1.5rem;">
+          <h2>Mis Registros y Calibración Fisiológica</h2>
+          <span class="status-indicator" style="background:#e0e7ff; color:#4338ca;">● Perfil Personal</span>
+        </div>
+
+        <section class="card-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.5rem;">
+          <div class="card">
+            <div class="card-title">Línea Base Reposo (FC)</div>
+            <div class="card-val">72.4 <span style="font-size: 0.9rem; color: #64748b;">bpm</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Conductancia Media (GSR)</div>
+            <div class="card-val">2.10 <span style="font-size: 0.9rem; color: #64748b;">µS</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Índice de Resiliencia</div>
+            <div class="card-val" style="color: #10b981;">88%</div>
+          </div>
+        </section>
+
+        <section class="box-large">
+          <h3>Historial de Evaluaciones y Sesiones Preventivas</h3>
+          <table class="table" style="margin-top: 1rem;">
+            <thead>
+              <tr>
+                <th>Fecha / Sesión</th>
+                <th>Evento Fisiológico</th>
+                <th>Duración</th>
+                <th>Acción Aplicada</th>
+                <th>Efectividad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>04 Sep 2026 - 16:30</td>
+                <td>Pico sostenido de FC (102 bpm)</td>
+                <td>3 min</td>
+                <td>Respiración diafragmática guiada</td>
+                <td><span class="badge-normal">Ritmo estabilizado</span></td>
+              </tr>
+              <tr>
+                <td>02 Sep 2026 - 11:15</td>
+                <td>Elevación leve de GSR (3.8 µS)</td>
+                <td>1.5 min</td>
+                <td>Pausa de descompresión visual</td>
+                <td><span class="badge-normal">Resuelto</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <!-- ================= PESTAÑA 3: AGENDA Y CITAS ================= -->
+      <div id="tab-agenda" class="pestana-contenido" style="display: none;">
+        <div class="content-header" style="margin-bottom: 1.5rem;">
+          <h2>Reserva de Citas con Especialista</h2>
+          <span class="status-indicator">● Turnos Disponibles</span>
+        </div>
+
+        <section class="box-large">
+          <h3>Solicitar Sesión de Acompañamiento Psicopedagógico</h3>
+          <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Coordina una sesión presencial o virtual si sientes agotamiento sostenido o sobrecarga académica.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; max-width: 700px;">
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Especialista Asignado:</label>
+              <input type="text" value="Dra. Zandra Blanco (Orientadora)" disabled style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Modalidad:</label>
+              <select style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <option>Presencial (Gabinete de Orientación)</option>
+                <option>Virtual (Videollamada Institucional)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Fecha sugerida:</label>
+              <input type="date" value="2026-09-08" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Hora de preferencia:</label>
+              <select style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <option>09:00 AM - 09:45 AM</option>
+                <option>11:00 AM - 11:45 AM</option>
+                <option>02:00 PM - 02:45 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-action" style="margin-top: 1.5rem;" onclick="alert('Solicitud enviada a la Dra. Zandra Blanco con éxito.')">
+            Confirmar Solicitud de Cita
+          </button>
+        </section>
+      </div>
+
+      <!-- ================= PESTAÑA 4: RECURSOS DE APOYO ================= -->
+      <div id="tab-recursos" class="pestana-contenido" style="display: none;">
+        <div class="content-header" style="margin-bottom: 1.5rem;">
+          <h2>Biblioteca de Recursos y Guías Adaptadas</h2>
+          <span class="status-indicator">● Material Abierto</span>
+        </div>
+
+        <section class="card-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.5rem;">
+          <div class="card">
+            <div class="card-title">Guía Metodológica</div>
+            <div class="card-val" style="font-size: 1.15rem; margin-top: 4px;">Técnica Pomodoro 2.0</div>
+            <p style="font-size: 0.82rem; color: #64748b; margin-top: 8px;">Estrategia de estudio para evitar la sobreestimulación nerviosa.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">Entrenamiento Somático</div>
+            <div class="card-val" style="font-size: 1.15rem; margin-top: 4px;">Relajación Jacobson</div>
+            <p style="font-size: 0.82rem; color: #64748b; margin-top: 8px;">Tensión y distensión muscular progresiva para momentos de examen.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">Módulo Acústico</div>
+            <div class="card-val" style="font-size: 1.15rem; margin-top: 4px;">Frecuencias Alfa</div>
+            <p style="font-size: 0.82rem; color: #64748b; margin-top: 8px;">Paisajes sonoros a 432Hz optimizados para el enfoque sostenido.</p>
+          </div>
+        </section>
+
+        <section class="box-large">
+          <h3>Pasos Rápidos de Reseteo Fisiológico</h3>
+          <ul style="margin-left: 1.5rem; margin-top: 1rem; color: #475569; font-size: 0.92rem; line-height: 1.8;">
+            <li><strong>Regla 20-20-20:</strong> Cada 20 minutos de pantalla, enfoca la vista a un punto distante a 20 pies por 20 segundos.</li>
+            <li><strong>Descompresión postural:</strong> Suelta los hombros y alinea el cuello con la columna para permitir mejor oxigenación.</li>
+            <li><strong>Respiración diafragmática 4-4:</strong> 4 segundos de inhalación profunda por la nariz, 4 segundos de exhalación lenta.</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- ================= PESTAÑA 5: PERFIL Y CONFIGURACIÓN ================= -->
+      <div id="tab-perfil" class="pestana-contenido" style="display: none;">
+        <div class="content-header" style="margin-bottom: 1.5rem;">
+          <h2>Configuración de Cuenta y Preferencias</h2>
+          <span class="status-indicator">● Guardado Seguro</span>
+        </div>
+
+        <section class="box-large" style="max-width: 600px;">
+          <h3>Datos Personales del Alumno</h3>
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.25rem;">
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Institución Académica:</label>
+              <input type="text" value="Universidad Tecnológica La Salle (ULSA)" disabled style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Guía Sensorial:</label>
+              <select style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <option>Voz interactiva + Estímulo visual (Predeterminado)</option>
+                <option>Solo estímulo visual discreto</option>
+                <option>Silencioso estricto</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Privacidad de Datos Biométricos:</label>
+              <p style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Tus telemetrías basales son accesibles únicamente por el orientador clínico asignado bajo confidencialidad médica institucional.</p>
+            </div>
+          </div>
+          <button class="btn-action" style="margin-top: 1.5rem;" onclick="alert('Preferencias guardadas correctamente.')">
+            Guardar Preferencias
+          </button>
+        </section>
+      </div>
+
+    </main>
   </div>
-  <a id="btn-contactar-orientador" class="btn-contactar" href="mailto:maria.lopez@universidad.edu?subject=Quiero%20conversar">Contactar</a>
-  <p id="orientador-nota" class="orientador-nota oculto">Notamos que llevas un tiempo con señales de estrés. Si quieres, puedes escribirle directamente.</p>
-</section>
-  <footer>NeuroSync · CultivaData 2026</footer>
+
+  <!-- Lógica de navegación entre pestañas -->
+  <script>
+    function mostrarPestana(idTab, elemento) {
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      elemento.classList.add('active');
+
+      document.querySelectorAll('.pestana-contenido').forEach(tab => {
+        tab.style.display = 'none';
+      });
+
+      const tabActiva = document.getElementById('tab-' + idTab);
+      if (tabActiva) {
+        tabActiva.style.display = 'block';
+      }
+    }
+  </script>
+
+  <!-- Script reactivo de telemetría y biosensores -->
   <script src="script.js"></script>
 </body>
 </html>

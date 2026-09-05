@@ -1,86 +1,135 @@
 // NeuroSync - script.js
-// Se conecta al backend (FastAPI) y actualiza el dashboard o la vista
-// de estudiante segun la pagina en la que estemos. Sin frameworks,
-// sin instalacion: solo abrir el .html en el navegador.
-
 const API_URL = "http://127.0.0.1:8000";
-const INTERVALO_MS = 3000;
+const INTERVALO_MS = 2500;
 
-// ---------------------------------------------------------------
-// DASHBOARD DEL ORIENTADOR (index.html)
-// ---------------------------------------------------------------
+// Utilidad global de formateo de hora
+function formatearHora(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("es-NI", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+// ===============================================================
+// 1. DASHBOARD DEL ORIENTADOR (index.html)
+// ===============================================================
 if (document.getElementById("tabla-usuarios")) {
-  const tbody = document.querySelector("#tabla-usuarios tbody");
-  const alertasLista = document.getElementById("alertas-lista");
-  const selector = document.getElementById("selector-usuario");
-  let usuariosPrevios = [];
+  const tbody = document.querySelector("#tabla-usuarios tbody") || document.getElementById("cuerpo-tabla");
+  const alertasLista = document.getElementById("contenedor-alertas") || document.getElementById("alertas-lista");
+  const selector = document.getElementById("selector-estudiante") || document.getElementById("selector-usuario");
+  
+  // KPIs
+  const kpiTotal = document.getElementById("kpi-total");
+  const kpiAlertas = document.getElementById("kpi-alertas");
+  const kpiEstables = document.getElementById("kpi-estables");
+  const kpiFcPromedio = document.getElementById("kpi-fc-promedio");
+
   let chart = null;
 
   async function cargarUsuarios() {
     try {
       const resp = await fetch(`${API_URL}/usuarios`);
       const usuarios = await resp.json();
-      usuariosPrevios = usuarios;
 
+      // Actualizar métricas KPI superiores
+      if (kpiTotal) kpiTotal.textContent = usuarios.length;
+      if (kpiAlertas) {
+        const enAlerta = usuarios.filter(u => u.en_alerta).length;
+        kpiAlertas.textContent = enAlerta;
+        kpiAlertas.style.color = enAlerta > 0 ? "#dc2626" : "#0f172a";
+      }
+      if (kpiEstables) {
+        kpiEstables.textContent = usuarios.filter(u => !u.en_alerta).length;
+      }
+      if (kpiFcPromedio && usuarios.length > 0) {
+        const conFc = usuarios.filter(u => u.ultima_fc !== null && u.ultima_fc !== undefined);
+        if (conFc.length > 0) {
+          const prom = conFc.reduce((acc, u) => acc + u.ultima_fc, 0) / conFc.length;
+          kpiFcPromedio.textContent = `${prom.toFixed(1)} bpm`;
+        }
+      }
+
+      // Renderizar filas de telemetría en la tabla
       if (usuarios.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="muted">
-          Aun no hay datos. Corre el simulador_hardware para empezar a ver informacion aqui.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 1.5rem;">
+          Esperando telemetría... Ejecuta simulador_hardware/simulador.py para comenzar.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = usuarios.map(u => `
-        <tr class="${u.en_alerta ? "fila-alerta" : ""}">
-          <td>${u.nombre}</td>
-          <td>${u.ultima_fc ?? "-"}</td>
-          <td>${u.ultima_gsr ?? "-"}</td>
+        <tr style="${u.en_alerta ? 'background: #fef2f2;' : ''}">
+          <td style="font-weight: 600;">${u.nombre}</td>
+          <td>${u.ultima_fc !== null ? `${u.ultima_fc.toFixed(1)} bpm` : "-"}</td>
+          <td>${u.ultima_gsr !== null ? `${u.ultima_gsr.toFixed(2)} µS` : "-"}</td>
           <td>${formatearHora(u.ultimo_timestamp)}</td>
-          <td><span class="badge ${u.en_alerta ? "alerta" : "normal"}">
-            ${u.en_alerta ? "En alerta" : "Normal"}</span></td>
+          <td>
+            <span class="${u.en_alerta ? 'badge-alerta' : 'badge-normal'}">
+              ${u.en_alerta ? "🚨 En alerta" : "● Normal"}
+            </span>
+          </td>
         </tr>`).join("");
 
-      // mantener el selector de usuarios sincronizado
-      const idsActuales = Array.from(selector.options).map(o => o.value);
-      usuarios.forEach(u => {
-        if (!idsActuales.includes(u.usuario_id)) {
-          const opt = document.createElement("option");
-          opt.value = u.usuario_id;
-          opt.textContent = u.nombre;
-          selector.appendChild(opt);
+      // Sincronizar el desplegable de estudiantes
+      if (selector) {
+        const idsActuales = Array.from(selector.options).map(o => o.value);
+        usuarios.forEach(u => {
+          if (!idsActuales.includes(u.usuario_id)) {
+            const opt = document.createElement("option");
+            opt.value = u.usuario_id;
+            opt.textContent = `${u.nombre} (${u.usuario_id})`;
+            selector.appendChild(opt);
+          }
+        });
+
+        if (!selector.value && usuarios[0]) {
+          selector.value = usuarios[0].usuario_id;
+          cargarGrafico(selector.value);
         }
-      });
-      if (!selector.value && usuarios[0]) {
-        selector.value = usuarios[0].usuario_id;
-        cargarGrafico(selector.value);
       }
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="5" class="muted">
-        No se pudo conectar al backend en ${API_URL}. ¿Esta corriendo 'uvicorn main:app --port 8000'?</td></tr>`;
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #dc2626; padding: 1.5rem;">
+          No se pudo conectar con el servidor en ${API_URL}. Revisa que uvicorn esté corriendo.</td></tr>`;
+      }
     }
   }
 
   async function cargarAlertas() {
+    if (!alertasLista) return;
     try {
       const resp = await fetch(`${API_URL}/alertas?solo_activas=true`);
       const alertas = await resp.json();
+      
       if (alertas.length === 0) {
-        alertasLista.innerHTML = `<p class="muted">Sin alertas por ahora.</p>`;
+        alertasLista.innerHTML = `<p style="color: #64748b; font-size: 0.9rem;">Sin alertas fisiológicas activas por el momento.</p>`;
         return;
       }
+
       alertasLista.innerHTML = alertas.map(a => `
-        <div class="alerta-item">
-          <span><strong>${a.usuario_id}</strong> — ${a.mensaje}</span>
-          <button onclick="atenderAlerta(${a.id})">Marcar atendida</button>
+        <div class="item-alerta">
+          <div>
+            <strong style="color: #991b1b; font-size: 0.95rem;">[${a.usuario_id}]</strong> 
+            <span style="color: #7f1d1d; font-size: 0.9rem;">${a.mensaje}</span>
+          </div>
+          <button class="btn-atender" onclick="atenderAlerta(${a.id})">Marcar atendida</button>
         </div>`).join("");
-    } catch (e) { /* el mensaje de la tabla ya avisa que no hay conexion */ }
+    } catch (e) { /* Error de conexión gestionado por la tabla */ }
   }
 
   window.atenderAlerta = async function (id) {
-    await fetch(`${API_URL}/alertas/${id}/atender`, { method: "POST" });
-    cargarAlertas();
-    cargarUsuarios();
+    try {
+      await fetch(`${API_URL}/alertas/${id}/atender`, { method: "POST" });
+      cargarAlertas();
+      cargarUsuarios();
+    } catch (e) {
+      console.error("Error al marcar alerta:", e);
+    }
   };
 
   async function cargarGrafico(usuarioId) {
+    if (!usuarioId) return;
+    const canvas = document.getElementById("grafico-fc") || document.getElementById("grafico");
+    if (!canvas) return;
+
     try {
       const resp = await fetch(`${API_URL}/mediciones/${usuarioId}?limite=20`);
       const datos = await resp.json();
@@ -93,31 +142,36 @@ if (document.getElementById("tabla-usuarios")) {
         chart.update();
         return;
       }
-      const ctx = document.getElementById("grafico");
-      chart = new Chart(ctx, {
+
+      chart = new Chart(canvas, {
         type: "line",
         data: {
           labels: etiquetas,
           datasets: [{
-            label: "Frecuencia cardiaca (bpm)",
+            label: "Frecuencia Cardíaca (bpm)",
             data: valoresFc,
-            borderColor: "#2e75b6",
-            backgroundColor: "rgba(46,117,182,0.15)",
+            borderColor: "#1e3a8a",
+            backgroundColor: "rgba(30, 58, 138, 0.12)",
+            borderWidth: 2.5,
             tension: 0.3,
             fill: true,
+            pointBackgroundColor: "#1e3a8a"
           }],
         },
-        options: { scales: { y: { suggestedMin: 50, suggestedMax: 140 } } },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { suggestedMin: 50, suggestedMax: 140, grid: { color: "#e2e8f0" } },
+            x: { grid: { display: false } }
+          }
+        },
       });
-    } catch (e) { /* sin datos aun */ }
+    } catch (e) { /* Sin registros históricos suficientes */ }
   }
 
-  selector.addEventListener("change", () => cargarGrafico(selector.value));
-
-  function formatearHora(iso) {
-    if (!iso) return "-";
-    const d = new Date(iso);
-    return d.toLocaleTimeString("es-NI", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  if (selector) {
+    selector.addEventListener("change", () => cargarGrafico(selector.value));
   }
 
   cargarUsuarios();
@@ -125,100 +179,126 @@ if (document.getElementById("tabla-usuarios")) {
   setInterval(() => {
     cargarUsuarios();
     cargarAlertas();
-    if (selector.value) cargarGrafico(selector.value);
+    if (selector && selector.value) cargarGrafico(selector.value);
   }, INTERVALO_MS);
 }
 
-// ---------------------------------------------------------------
-// VISTA DEL ESTUDIANTE (estudiante.html)
-// ---------------------------------------------------------------
-if (document.getElementById("estado-card")) {
-  const usuarioSelect = document.getElementById("usuario-select");
-  const estadoCard = document.getElementById("estado-card");
-  const estadoTexto = estadoCard.querySelector(".estado-texto");
-  const estadoDetalle = estadoCard.querySelector(".estado-detalle");
-  const intervencion = document.getElementById("intervencion");
-  const instruccion = document.getElementById("instruccion");
-  const orientadorCard = document.getElementById("orientador-card");
-  const orientadorNota = document.getElementById("orientador-nota");
+// ===============================================================
+// 2. PORTAL DEL ESTUDIANTE (estudiante.html)
+// ===============================================================
+if (document.getElementById("fc-valor") || document.getElementById("selector-usuario")) {
+  const selectorUsuario = document.getElementById("selector-usuario");
+  const fcValor = document.getElementById("fc-valor");
+  const gsrValor = document.getElementById("gsr-valor");
+  const estadoValor = document.getElementById("estado-valor");
+  const bannerAlerta = document.getElementById("alerta");
+  const circulo = document.getElementById("circulo");
+  const instruccion = document.getElementById("instruccion-respiracion");
 
-  let opcionesListas = false;
+  let usuariosCargados = false;
   let cicloRespiracion = null;
+  let inhalando = true;
 
-  async function cargarOpcionesUsuario() {
-    try {
-      const resp = await fetch(`${API_URL}/usuarios`);
-      const usuarios = await resp.json();
-      if (usuarios.length > 0 && !opcionesListas) {
-        usuarioSelect.innerHTML = usuarios
-          .map(u => `<option value="${u.usuario_id}">${u.nombre}</option>`).join("");
-        opcionesListas = true;
-      }
-    } catch (e) { /* seguimos intentando en el proximo ciclo */ }
+  function hablar(texto) {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = "es-ES";
+    utterance.rate = 0.85;
+    window.speechSynthesis.speak(utterance);
   }
 
-  async function actualizarEstado() {
-    if (!usuarioSelect.value) return;
+  function iniciarRespiracionGuiada() {
+    if (cicloRespiracion) return;
+    if (instruccion) instruccion.textContent = "Inhala...";
+    if (circulo) circulo.style.transform = "scale(1.25)";
+    hablar("Inhala profundamente");
+
+    cicloRespiracion = setInterval(() => {
+      inhalando = !inhalando;
+      if (instruccion) instruccion.textContent = inhalando ? "Inhala..." : "Exhala...";
+      if (circulo) circulo.style.transform = inhalando ? "scale(1.25)" : "scale(0.85)";
+      hablar(inhalando ? "Inhala" : "Exhala");
+    }, 4000);
+  }
+
+  function detenerRespiracionGuiada() {
+    if (!cicloRespiracion) return;
+    clearInterval(cicloRespiracion);
+    cicloRespiracion = null;
+    if (instruccion) instruccion.textContent = "Ritmo estable";
+    if (circulo) circulo.style.transform = "scale(1)";
+    window.speechSynthesis.cancel();
+  }
+
+  async function cargarSelectEstudiantes() {
     try {
       const resp = await fetch(`${API_URL}/usuarios`);
       const usuarios = await resp.json();
-      const yo = usuarios.find(u => u.usuario_id === usuarioSelect.value);
-      if (!yo) return;
 
-      if (yo.en_alerta) {
-        orientadorCard.classList.add("destacada");
-        orientadorNota.classList.remove("oculto");
-        estadoCard.className = "estado-card alerta";
-        estadoTexto.textContent = "Hemos notado señales de estrés";
-        estadoDetalle.textContent = `FC: ${yo.ultima_fc} bpm · GSR: ${yo.ultima_gsr}`;
-        mostrarIntervencion();
+      if (usuarios.length > 0 && !usuariosCargados && selectorUsuario) {
+        selectorUsuario.innerHTML = usuarios.map(u => 
+          `<option value="${u.usuario_id}">${u.nombre} (${u.usuario_id})</option>`
+        ).join("");
+        usuariosCargados = true;
+      }
+    } catch (e) { /* Reintento en el siguiente ciclo */ }
+  }
+
+  async function actualizarTelemetriaEstudiante() {
+    if (!selectorUsuario || !selectorUsuario.value) return;
+    try {
+      const resp = await fetch(`${API_URL}/usuarios`);
+      const usuarios = await resp.json();
+      const actual = usuarios.find(u => u.usuario_id === selectorUsuario.value);
+
+      if (!actual) return;
+
+      // Actualizar valores numéricos
+      if (fcValor) {
+        fcValor.innerHTML = `${actual.ultima_fc !== null ? actual.ultima_fc.toFixed(1) : "--"} <span style="font-size: 1rem; font-weight: 600; color: #64748b;">bpm</span>`;
+      }
+      if (gsrValor) {
+        gsrValor.innerHTML = `${actual.ultima_gsr !== null ? actual.ultima_gsr.toFixed(2) : "--"} <span style="font-size: 1rem; font-weight: 600; color: #64748b;">µS</span>`;
+      }
+
+      // Evaluar estado de alerta o normalidad
+      if (actual.en_alerta) {
+        if (estadoValor) {
+          estadoValor.textContent = "🚨 Alerta de Estrés";
+          estadoValor.style.color = "#dc2626";
+        }
+        if (bannerAlerta) {
+          bannerAlerta.style.display = "block";
+          bannerAlerta.innerHTML = `
+            <h3>⚠️ Elevación Fisiológica Detectada</h3>
+            <p>Se registraron picos superiores a tu línea base (FC: ${actual.ultima_fc?.toFixed(1)} bpm · GSR: ${actual.ultima_gsr?.toFixed(2)} µS). Inicia el ejercicio respiratorio para estabilizar tu ritmo.</p>
+          `;
+        }
+        iniciarRespiracionGuiada();
       } else {
-        orientadorCard.classList.remove("destacada");
-        orientadorNota.classList.add("oculto");
-        estadoCard.className = "estado-card normal";
-        estadoTexto.textContent = "Todo tranquilo por ahora";
-        estadoDetalle.textContent = yo.ultima_fc ? `FC: ${yo.ultima_fc} bpm · GSR: ${yo.ultima_gsr}` : "";
-        ocultarIntervencion();
+        if (estadoValor) {
+          estadoValor.textContent = "● Tranquilo (Basal)";
+          estadoValor.style.color = "#10b981";
+        }
+        if (bannerAlerta) bannerAlerta.style.display = "none";
+        detenerRespiracionGuiada();
       }
     } catch (e) {
-      estadoTexto.textContent = "Sin conexion al backend";
+      if (estadoValor) estadoValor.textContent = "Sin conexión";
     }
   }
 
+  if (selectorUsuario) {
+    selectorUsuario.addEventListener("change", () => {
+      detenerRespiracionGuiada();
+      actualizarTelemetriaEstudiante();
+    });
+  }
 
-  function hablar(texto) {
-  if (!sonidoActivado || !("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel(); // corta cualquier frase anterior que siga sonando
-  const utterance = new SpeechSynthesisUtterance(texto);
-  utterance.lang = "es-ES";
-  utterance.rate = 0.85; // un poco más lento, tono más relajante
-  window.speechSynthesis.speak(utterance);
-}
-
-let sonidoActivado = true;
- function mostrarIntervencion() {
-  intervencion.classList.remove("oculto");
-  if (cicloRespiracion) return;
-  let inhalando = true;
-  instruccion.textContent = "Inhala...";
-  hablar("Inhala profundamente");
-  cicloRespiracion = setInterval(() => {
-    inhalando = !inhalando;
-    const texto = inhalando ? "Inhala..." : "Exhala...";
-    instruccion.textContent = texto;
-    hablar(inhalando ? "Inhala" : "Exhala");
-  }, 3000);
-}
-function ocultarIntervencion() {
-  intervencion.classList.add("oculto");
-  clearInterval(cicloRespiracion);
-  cicloRespiracion = null;
-  window.speechSynthesis.cancel();
-}
-
-  cargarOpcionesUsuario().then(actualizarEstado);
+  cargarSelectEstudiantes().then(actualizarTelemetriaEstudiante);
   setInterval(() => {
-    cargarOpcionesUsuario();
-    actualizarEstado();
+    cargarSelectEstudiantes();
+    actualizarTelemetriaEstudiante();
   }, INTERVALO_MS);
 }

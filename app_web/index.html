@@ -1,43 +1,178 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NeuroSync · Dashboard Orientador</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroSync | Panel Clínico Orientador</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
- <header>
-  <h1><img src="logo.png" alt="NeuroSync" class="logo-img"></h1>
-  <a href="index.html" class="nav-link">← Ver Vista de estudiante</a>
-</header>
 
-  <main>
-    <section class="tarjeta" id="alertas-section">
-      <h2>🚨 Alertas activas</h2>
-      <div id="alertas-lista"><p class="muted">Sin alertas por ahora.</p></div>
-    </section>
+  <!-- Barra Superior (Topbar del Wireframe) -->
+  <header class="topbar">
+    <div class="brand-container">
+      <img src="logo.png" alt="NeuroSync" class="logo-img">
+    </div>
+    <div class="user-info">
+      <span>Dra. Zandra Blanco · Orientación y Salud Integral</span>
+      <a href="estudiante.html" class="nav-link">Ver Vista Estudiante →</a>
+    </div>
+  </header>
 
-    <section class="tarjeta" id="usuarios-section">
-      <h2>👥 Estado de estudiantes</h2>
-      <table id="tabla-usuarios">
-        <thead>
-          <tr><th>Estudiante</th><th>FC</th><th>GSR</th><th>Última lectura</th><th>Estado</th></tr>
-        </thead>
-        <tbody><tr><td colspan="5" class="muted">Esperando datos del backend...</td></tr></tbody>
-      </table>
-    </section>
+  <div class="layout">
+    <!-- Menú Lateral (Sidebar del Wireframe) -->
+   <!-- Menú Lateral Interactivo -->
+    <aside class="sidebar">
+      <div class="sidebar-item active" onclick="cambiarVistaOrientador('dashboard', this)">📊 Dashboard Biométrico</div>
+      <div class="sidebar-item" onclick="cambiarVistaOrientador('alertas', this)">🚨 Centro de Alertas</div>
+      <div class="sidebar-item" onclick="cambiarVistaOrientador('estudiantes', this)">👥 Monitoreo Estudiantes</div>
+      <div class="sidebar-item" onclick="cambiarVistaOrientador('historial', this)">📈 Historial de Tendencias</div>
+      <div class="sidebar-item" onclick="cambiarVistaOrientador('ajustes', this)">⚙️ Ajustes del Sistema</div>
+    </aside>
 
-    <section class="tarjeta" id="grafico-section">
-      <h2>📈 Historial de Frecuencia Cardíaca</h2>
-      <select id="selector-usuario"></select>
-      <canvas id="grafico" height="110"></canvas>
-    </section>
-  </main>
+    <!-- Contenido Principal -->
+    <main class="content">
+      <div class="content-header">
+        <h2>Panel de Telemetría y Alertas Tempranas</h2>
+        <span class="status-indicator">● Servidor En Línea</span>
+      </div>
 
-  <footer>NeuroSync · Hackathon Nicaragua 2026</footer>
+      <!-- Tarjetas KPI Superiores (Card-row del Wireframe) -->
+      <section class="card-row">
+        <div class="card">
+          <div class="card-title">Estudiantes Monitoreados</div>
+          <div class="card-val" id="kpi-total">3</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Alertas Activas</div>
+          <div class="card-val" id="kpi-alertas" style="color: #dc2626;">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Estado Estable (Basal)</div>
+          <div class="card-val" id="kpi-estables" style="color: #10b981;">3</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Frecuencia Cardíaca Media</div>
+          <div class="card-val" id="kpi-fc-promedio">-- bpm</div>
+        </div>
+      </section>
+
+      <!-- Centro de Alertas Activas (Inyección funcional de script.js) -->
+      <section class="box-large" id="seccion-alertas">
+        <h3>🚨 Centro de Alertas Fisiológicas</h3>
+        <div id="contenedor-alertas">
+          <p style="color: #64748b; font-size: 0.9rem;">Sin alertas fisiológicas por el momento.</p>
+        </div>
+      </section>
+
+      <!-- Tabla de Estudiantes (Inyección funcional de script.js) -->
+      <section class="box-large">
+        <h3>Telemetría de Estudiantes en Tiempo Real</h3>
+        <div style="overflow-x: auto;">
+          <table class="table" id="tabla-usuarios">
+            <thead>
+              <tr>
+                <th>Estudiante</th>
+                <th>FC (bpm)</th>
+                <th>GSR (Conductancia)</th>
+                <th>Última Lectura</th>
+                <th>Estado Fisiológico</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-tabla">
+              <tr>
+                <td colspan="5" style="text-align: center; color: #64748b;">Sincronizando con el servidor...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Historial y Curva de Tendencias -->
+      <section class="box-large">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3>📈 Historial Biométrico (Curva de Frecuencia Cardíaca)</h3>
+          <select id="selector-estudiante">
+            <option value="">Seleccionar estudiante...</option>
+          </select>
+        </div>
+        <div style="height: 280px; width: 100%;">
+          <canvas id="grafico-fc"></canvas>
+        </div>
+      </section>
+    <!-- Sección Ajustes del Sistema -->
+      <section class="box-large vista-panel" id="sec-ajustes" style="display: none;">
+        <h3>⚙️ Calibración de Umbrales Fisiológicos</h3>
+        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.25rem;">
+          Parámetros para el motor de inferencia y disparo de alertas automáticas.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; max-width: 600px;">
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Umbral Alerta FC:</label>
+            <input type="text" value="> 100 bpm (Sostenido)" disabled style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Umbral Alerta GSR:</label>
+            <input type="text" value="> 3.5 µS (Conductancia)" disabled style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Crisis Inmediata:</label>
+            <input type="text" value="> 120 bpm ó > 5.0 µS" disabled style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Frecuencia Muestreo:</label>
+            <input type="text" value="2.5 segundos" disabled style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
   <script src="script.js"></script>
 </body>
-</html>
+<script>
+    function cambiarVistaOrientador(vista, elemento) {
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      elemento.classList.add('active');
 
+      const kpis = document.querySelector('.card-row');
+      const alertas = document.getElementById('seccion-alertas');
+      const tabla = document.querySelector('section:has(#tabla-usuarios)');
+      const grafico = document.querySelector('section:has(#grafico-fc)');
+      const ajustes = document.getElementById('sec-ajustes');
+
+      if (vista === 'dashboard') {
+        kpis.style.display = 'grid';
+        alertas.style.display = 'block';
+        tabla.style.display = 'block';
+        grafico.style.display = 'block';
+        ajustes.style.display = 'none';
+      } else if (vista === 'alertas') {
+        kpis.style.display = 'none';
+        alertas.style.display = 'block';
+        tabla.style.display = 'none';
+        grafico.style.display = 'none';
+        ajustes.style.display = 'none';
+      } else if (vista === 'estudiantes') {
+        kpis.style.display = 'none';
+        alertas.style.display = 'none';
+        tabla.style.display = 'block';
+        grafico.style.display = 'none';
+        ajustes.style.display = 'none';
+      } else if (vista === 'historial') {
+        kpis.style.display = 'none';
+        alertas.style.display = 'none';
+        tabla.style.display = 'none';
+        grafico.style.display = 'block';
+        ajustes.style.display = 'none';
+      } else if (vista === 'ajustes') {
+        kpis.style.display = 'none';
+        alertas.style.display = 'none';
+        tabla.style.display = 'none';
+        grafico.style.display = 'none';
+        ajustes.style.display = 'block';
+      }
+    }
+  </script>
+</html>
